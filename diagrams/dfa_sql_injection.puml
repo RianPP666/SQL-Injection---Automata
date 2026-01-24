@@ -1,0 +1,55 @@
+@startuml DFA_SQL_Injection
+title DFA untuk Deteksi SQL Injection (2 Pola)
+
+skinparam state {
+    BackgroundColor<<accept>> LightGreen
+    BackgroundColor<<start>> LightBlue
+}
+
+== DFA 1: Boolean-based (' OR ') ==
+
+state "Boolean-based DFA" as boolean {
+    state "q0\n(Start)" as b0 <<start>>
+    state "q1\n(')" as b1
+    state "q2\n(OR)" as b2
+    state "q3\n(Accept)\n✓ Boolean!" as b3 <<accept>>
+    
+    [*] --> b0
+    b0 --> b1 : '
+    b1 --> b2 : OR
+    b2 --> b3 : '
+}
+
+note right of boolean
+  Pattern: ' OR '
+  Contoh: id=1' OR '1'='1
+  
+  Transisi:
+  δ(q0, ') = q1
+  δ(q1, OR) = q2
+  δ(q2, ') = q3 (Accept)
+end note
+
+== DFA 2: Comment-based ('--) ==
+
+state "Comment-based DFA" as comment {
+    state "c0\n(Start)" as c0 <<start>>
+    state "c1\n(')" as c1
+    state "c2\n(Accept)\n✓ Comment!" as c2 <<accept>>
+    
+    [*] --> c0
+    c0 --> c1 : '
+    c1 --> c2 : -- atau #
+}
+
+note right of comment
+  Pattern: '-- atau '#
+  Contoh: admin'--
+  
+  Transisi:
+  δ(c0, ') = c1
+  δ(c1, --) = c2 (Accept)
+  δ(c1, #) = c2 (Accept)
+end note
+
+@enduml

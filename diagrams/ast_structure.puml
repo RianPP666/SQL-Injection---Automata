@@ -1,0 +1,49 @@
+@startuml AST_Structure
+title Struktur AST untuk Mini-IDS (2 Pola)
+
+skinparam class {
+    BackgroundColor<<root>> LightBlue
+    BackgroundColor<<attack>> LightCoral
+    BackgroundColor<<safe>> LightGreen
+}
+
+class ASTNode {
+    + node_type: str
+    + value: str
+    + children: List
+    + metadata: dict
+    --
+    + add_child()
+    + print_tree()
+}
+
+class PayloadNode <<root>> {
+    + is_malicious: bool
+    + attack_type: str
+}
+
+class SQLInjectionNode <<attack>> {
+    + injection_type: str
+    --
+    Types:
+    - BOOLEAN_BASED
+    - COMMENT_BASED
+}
+
+class SafeNode <<safe>> {
+    + message: str
+}
+
+ASTNode <|-- PayloadNode
+ASTNode <|-- SQLInjectionNode
+ASTNode <|-- SafeNode
+
+PayloadNode o-- SQLInjectionNode
+PayloadNode o-- SafeNode
+
+note bottom of SQLInjectionNode
+  Boolean-based: ' OR '1'='1
+  Comment-based: admin'--
+end note
+
+@enduml

@@ -1,0 +1,69 @@
+@startuml System_Architecture
+title Arsitektur Sistem Mini-IDS SQL Injection
+
+skinparam componentStyle rectangle
+
+package "Input" {
+    [HTTP Request Payload] as input
+    [DSL Signature Rules] as dsl
+}
+
+package "Lexical Analysis" {
+    [Lexer\n(DFA-based)] as lexer
+    note right of lexer
+        Tokens:
+        - SQL_KEYWORD
+        - SQL_QUOTE
+        - SQL_OPERATOR
+        - SQL_COMMENT
+        - ALWAYS_TRUE
+    end note
+}
+
+package "Syntax Analysis" {
+    [Parser\n(Recursive Descent)] as parser
+    [CFG Rules] as cfg
+}
+
+package "Semantic Analysis" {
+    [AST Builder] as ast
+    [Semantic Analyzer] as semantic
+    [Symbol Table] as symtab
+}
+
+package "IR & Execution" {
+    [IR Generator] as ir
+    [DFA Simulator] as automata
+    [DSL Interpreter] as interpreter
+}
+
+package "Output" {
+    [Detection Result] as result
+    [Response Action] as action
+}
+
+input --> lexer
+dsl --> interpreter
+
+lexer --> parser : tokens
+cfg --> parser
+
+parser --> ast : parse tree
+ast --> semantic
+symtab --> semantic
+
+semantic --> ir : validated AST
+ir --> automata
+interpreter --> automata : signature rules
+
+automata --> result
+result --> action
+
+note bottom of action
+    Response:
+    - ALLOW (safe)
+    - ALERT (log)
+    - BLOCK (reject)
+end note
+
+@enduml

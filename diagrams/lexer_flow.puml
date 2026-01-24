@@ -1,0 +1,52 @@
+@startuml Lexer_Flow
+title Alur Proses Lexer (Tokenizer) - SQL Injection Detection
+
+start
+
+:Terima Input Payload;
+
+:Inisialisasi DFA\nState = q0, Position = 0;
+
+while (Masih ada karakter?) is (Ya)
+    :Baca karakter/substring;
+    
+    :Match dengan Token Patterns;
+    
+    if (Match SQL_KEYWORD?) then (Ya)
+        :Generate Token\nSQL_KEYWORD;
+    elseif (Match SQL_QUOTE?) then (Ya)
+        :Generate Token\nSQL_QUOTE;
+    elseif (Match SQL_COMMENT?) then (Ya)
+        :Generate Token\nSQL_COMMENT;
+    elseif (Match ALWAYS_TRUE?) then (Ya)
+        :Generate Token\nALWAYS_TRUE;
+    elseif (Match SQL_OPERATOR?) then (Ya)
+        :Generate Token\nSQL_OPERATOR;
+    elseif (Match IDENTIFIER?) then (Ya)
+        :Generate Token\nIDENTIFIER;
+    else (Lainnya)
+        :Generate Token\nUNKNOWN;
+    endif
+    
+    :Tambah ke Token List;
+    :Advance Position;
+endwhile (Tidak)
+
+:Tambah Token EOF;
+
+:Return Token List;
+
+stop
+
+note right
+  SQL Injection Tokens:
+  ═══════════════════
+  - SQL_KEYWORD: SELECT, OR, UNION, DROP
+  - SQL_QUOTE: ' atau "
+  - SQL_COMMENT: -- atau #
+  - SQL_OPERATOR: =, <>, etc.
+  - ALWAYS_TRUE: 1=1, '1'='1'
+  - SQL_SEMICOLON: ;
+end note
+
+@enduml

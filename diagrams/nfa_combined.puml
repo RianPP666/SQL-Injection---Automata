@@ -1,0 +1,50 @@
+@startuml NFA_SQL_Injection
+title NFA untuk Deteksi SQL Injection (2 Pola)
+
+skinparam state {
+    BackgroundColor<<accept>> LightGreen
+    BackgroundColor<<start>> LightBlue
+}
+
+state "q0\nStart" as q0 <<start>>
+
+state "Boolean-based" as boolean {
+    state "b1" as b1
+    state "b2" as b2
+    state "ACCEPT\nBoolean" as ba <<accept>>
+    
+    b1 : Terima Quote (')
+    b2 : Terima OR/AND
+    
+    b1 --> b2 : ε
+    b2 --> ba : match '1'='1'
+}
+
+state "Comment-based" as comment {
+    state "c1" as c1
+    state "ACCEPT\nComment" as ca <<accept>>
+    
+    c1 : Terima Quote (')
+    
+    c1 --> ca : match -- atau #
+}
+
+[*] --> q0
+
+q0 --> b1 : ε (jika ada ')
+q0 --> c1 : ε (jika ada ')
+
+note bottom of boolean
+  Pattern yang dideteksi:
+  - ' OR '1'='1
+  - ' AND '1'='1
+  - OR 1=1
+end note
+
+note bottom of comment
+  Pattern yang dideteksi:
+  - admin'--
+  - user'#
+end note
+
+@enduml

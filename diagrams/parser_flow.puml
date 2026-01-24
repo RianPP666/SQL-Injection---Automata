@@ -1,0 +1,54 @@
+@startuml Parser_Flow
+title Alur Proses Parser (Recursive Descent) - SQL Injection
+
+start
+
+:Terima Token List;
+
+:Inisialisasi Parser;
+
+:parse() → Entry Point;
+
+partition "Deteksi SQL Injection" {
+    if (Ada UNION keyword?) then (Ya)
+        :parse_union_attack();
+        :Create SQLInjectionNode\n(UNION_BASED, CRITICAL);
+    elseif (Ada OR/AND + ALWAYS_TRUE?) then (Ya)
+        :parse_boolean_attack();
+        :Create SQLInjectionNode\n(BOOLEAN_BASED, HIGH);
+    elseif (Ada SQL_COMMENT?) then (Ya)
+        :parse_comment_attack();
+        :Create SQLInjectionNode\n(COMMENT_BASED, HIGH);
+    elseif (Ada SEMICOLON + SQL_KEYWORD?) then (Ya)
+        :parse_stacked_query();
+        :Create SQLInjectionNode\n(STACKED_QUERY, CRITICAL);
+    else (Tidak ada pattern)
+        :Create SafeNode;
+    endif
+}
+
+:Build PayloadNode (root);
+
+:Attach child nodes;
+
+:Return AST;
+
+stop
+
+note right
+  Parse Functions:
+  ════════════════
+  parse_union_attack()
+    → UNION [ALL] SELECT ...
+  
+  parse_boolean_attack()
+    → OR '1'='1'
+  
+  parse_comment_attack()
+    → payload--
+  
+  parse_stacked_query()
+    → ; DROP TABLE
+end note
+
+@enduml
