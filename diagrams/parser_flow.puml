@@ -1,54 +1,48 @@
-@startuml Parser_Flow
-title Alur Proses Parser (Recursive Descent) - SQL Injection
+@startuml Parser_Flowchart
+title Flowchart Parser (Recursive Descent) - 2 Pola
+
+skinparam activity {
+    BackgroundColor<<start>> LightBlue
+    BackgroundColor<<end>> LightGreen
+    BackgroundColor<<decision>> LightYellow
+    BackgroundColor<<attack>> LightCoral
+    BackgroundColor<<safe>> LightGreen
+}
 
 start
 
-:Terima Token List;
+:Terima Token dari Lexer;
 
-:Inisialisasi Parser;
+:Panggil parse();
 
-:parse() → Entry Point;
-
-partition "Deteksi SQL Injection" {
-    if (Ada UNION keyword?) then (Ya)
-        :parse_union_attack();
-        :Create SQLInjectionNode\n(UNION_BASED, CRITICAL);
-    elseif (Ada OR/AND + ALWAYS_TRUE?) then (Ya)
-        :parse_boolean_attack();
-        :Create SQLInjectionNode\n(BOOLEAN_BASED, HIGH);
-    elseif (Ada SQL_COMMENT?) then (Ya)
-        :parse_comment_attack();
-        :Create SQLInjectionNode\n(COMMENT_BASED, HIGH);
-    elseif (Ada SEMICOLON + SQL_KEYWORD?) then (Ya)
-        :parse_stacked_query();
-        :Create SQLInjectionNode\n(STACKED_QUERY, CRITICAL);
-    else (Tidak ada pattern)
-        :Create SafeNode;
+if (Ada pola\nQUOTE + OR?) then (Ya)
+    :_parse_boolean_attack();
+    :Buat SQLInjectionNode\n(BOOLEAN_BASED);
+    :is_malicious = True;
+else (Tidak)
+    if (Ada pola\nQUOTE + COMMENT?) then (Ya)
+        :_parse_comment_attack();
+        :Buat SQLInjectionNode\n(COMMENT_BASED);
+        :is_malicious = True;
+    else (Tidak)
+        :Buat SafeNode;
+        :is_malicious = False;
     endif
-}
-
-:Build PayloadNode (root);
-
-:Attach child nodes;
+endif
 
 :Return AST;
 
 stop
 
 note right
-  Parse Functions:
-  ════════════════
-  parse_union_attack()
-    → UNION [ALL] SELECT ...
+  **Recursive Descent Parser**
   
-  parse_boolean_attack()
-    → OR '1'='1'
+  Setiap non-terminal dalam CFG
+  menjadi satu fungsi:
   
-  parse_comment_attack()
-    → payload--
-  
-  parse_stacked_query()
-    → ; DROP TABLE
+  - parse() → SQLInjection
+  - _parse_boolean_attack() → BooleanAttack
+  - _parse_comment_attack() → CommentAttack
 end note
 
 @enduml
