@@ -15,9 +15,6 @@ Komponen:
 from lexer import Lexer
 from parser import Parser
 from automata import DFASimulator
-from semantic import SemanticAnalyzer
-from ir import IRGenerator, IRInterpreter
-from interpreter import DSLInterpreter
 import argparse
 
 
